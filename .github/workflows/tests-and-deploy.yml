@@ -1,11 +1,11 @@
 name: Tests and Deploy
 
-# Execute this workflow only when pushes/pull requests occur pointing to 'main' branch
+# Execute this workflow only when pushes/pull requests occur pointing to 'master' branch
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 # Specifying workflow jobs
 jobs:
@@ -27,7 +27,7 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'master'
     env:
       HEROKU_ACCOUNT_EMAIL: nick70000@hotmail.com
       HEROKU_APP_NAME: nodejs-ci-cd-demo-nicholas
