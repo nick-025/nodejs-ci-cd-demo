@@ -1,0 +1,60 @@
+name: Tests and Deploy
+
+# Execute this workflow only when pushes/pull requests occur pointing to 'main' branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# Specifying workflow jobs
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Run tests
+        run: npm ci && npm test
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'main'
+    env:
+      HEROKU_ACCOUNT_EMAIL: nick70000@hotmail.com
+      HEROKU_APP_NAME: nodejs-ci-cd-demo-nicholas
+    needs:
+      - tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      # The following lines execute some code in your deployment platform
+      - name: Setup Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+          echo "machine api.heroku.com
+            login $HEROKU_ACCOUNT_EMAIL
+            password ${{ secrets.HEROKU_API_KEY }}
+          machine git.heroku.com
+            login $HEROKU_ACCOUNT_EMAIL
+            password ${{ secrets.HEROKU_API_KEY }}" > ~/.netrc
+          heroku container:login
+
+      - name: Deploy to Heroku
+        run: |
+          heroku container:push api -a $HEROKU_APP_NAME
+          heroku container:release api -a $HEROKU_APP_NAME
